@@ -1,0 +1,327 @@
+/* Main container for Sensor Data Page */
+.sensor-data-container {
+  padding: 20px;
+  margin: 20px auto;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  max-width: 1200px;
+}
+
+/* Header Styling */
+.sensor-data-container header {
+  text-align: left;
+  margin-bottom: 20px;
+  background-color: #f0f0f0;
+  padding: 10px 20px;
+  border-radius: 8px;
+}
+
+.sensor-data-container header h1 {
+  color: #333;
+}
+
+/* Layout: User Info on Left, Sensor Data on Right */
+.sensor-data-wrapper {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap; /* Allows items to wrap on smaller screens */
+  align-items: flex-start; /* Aligns items at the top */
+
+}
+
+/* 🟢 USER INFO SECTION */
+.user-info-card {
+  flex: 1; /* Allows flexible resizing */
+  width: 35%;
+  background: #f0f0f0;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  max-width: 450px;
+  min-height: 300px;
+}
+
+/* Header Styling */
+.user-header {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.user-header h2 {
+  font-size: 22px;
+  color: #333;
+  font-weight: bold;
+}
+
+/* Table-like User Info Layout */
+.user-details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.user-info-row {
+  display: flex;
+  justify-content: space-between;
+  background: #f8f8f8; /* Light grey background */
+  padding: 10px;
+  border-radius: 6px;
+  font-size: 16px;
+}
+
+.user-info-row .label {
+  font-weight: bold;
+  color: #555;
+}
+
+.user-info-row .value {
+  color: #222;
+}
+
+/* 📍 VEHICLE LOCATION */
+.vehicle-location {
+  margin-top: 25px;
+  padding: 15px;
+  background: #f9f9f9;
+  border-radius: 8px;
+}
+
+.vehicle-location h3 {
+  font-size: 18px;
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+.vehicle-location iframe {
+  width: 100%;
+  height: 200px; /* ✅ Bigger map */
+  border-radius: 8px;
+}
+
+/* 🟢 SENSOR DATA SECTION */
+.sensor-data-section {
+  width: 60%;
+  padding: 20px;
+  background-color: #f0f0f0;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.sensor-data-section h2 {
+  color: #551;
+}
+
+/* Button Styles */
+.sensor-data-section button {
+  padding: 10px 20px;
+  cursor: pointer;
+  font-size: 16px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  margin-bottom: 10px;
+}
+
+/* List Styling */
+.sensor-data-section ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.sensor-data-section li {
+  margin-bottom: 10px;
+  padding: 10px;
+  background-color: #fff;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.sensor-data-section p {
+  margin: 5px 0;
+}
+
+.sensor-data-section p strong {
+  color: #333;
+}
+
+/* 🟢 CHART STYLING */
+.chart-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.chart {
+  flex: 1;
+  min-width: 300px;
+  min-height: 280px;
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* 🎯 Fuel Level Chart */
+.fuel-chart {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.fuel-chart canvas {
+  max-width: 180px !important;
+  max-height: 180px !important;
+}
+
+/* Map Styles for Sensor Data */
+.sensor-map-container {
+  margin-top: 20px;
+  overflow: hidden;
+}
+
+.sensor-map-container iframe {
+  width: 100%;
+  height: 180px;
+  border: none;
+  border-radius: 8px;
+}
+/* 🌦 Weather Information Styling */
+.weather-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(135deg, #6dd5ed, #2193b0);
+  padding: 15px;
+  border-radius: 10px;
+  color: white;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  margin-top: 15px;
+  max-width: 300px;
+}
+
+/* Left Section: Icon & Temperature */
+.weather-left {
+  display: flex;
+  align-items: center;
+}
+
+.weather-icon {
+  width: 50px;
+  height: 50px;
+  margin-right: 10px;
+}
+
+.temperature {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+/* Right Section: Condition, Wind & Humidity */
+.weather-details {
+  text-align: right;
+}
+
+.condition {
+  font-size: 16px;
+  font-weight: bold;
+  text-transform: capitalize;
+}
+
+.wind-humidity {
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+/* 🟢 MEDIA QUERIES - RESPONSIVENESS */
+
+/* For Tablets and Smaller Screens (max-width: 1024px) */
+@media (max-width: 1024px) {
+  .user-info-card {
+    width: 100%;
+    max-width: 100%;
+    text-align: center;
+  }
+
+  .sensor-data-section {
+    width: 100%;
+  }
+
+  .chart-container {
+    flex-wrap: wrap;
+  }
+
+  .chart {
+    width: 100%;
+  }
+}
+
+/* For Small Screens (up to 768px) */
+@media (max-width: 768px) {
+  .sensor-info-section {
+    width: 100%;
+    margin-bottom: 20px;
+  }
+
+  .sensor-data-section {
+    width: 100%;
+  }
+
+  .chart-container {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .chart {
+    width: 100%;
+  }
+
+  /* Adjust map size */
+  .sensor-map-container iframe {
+    height: 250px;
+  }
+
+  .sensor-data-container {
+    padding: 15px;
+  }
+}
+
+/* For Extra Small Screens (up to 480px) */
+@media (max-width: 480px) {
+  .sensor-info-section h2 {
+    font-size: 18px;
+  }
+
+  .sensor-info-section p {
+    font-size: 14px;
+  }
+
+  .sensor-data-section h2 {
+    font-size: 18px;
+  }
+
+  .sensor-data-section button {
+    font-size: 14px;
+    padding: 8px 16px;
+  }
+
+  .chart-container {
+    gap: 10px;
+  }
+
+  .chart {
+    padding: 10px;
+  }
+}
+.map-container {
+  width: 100%;
+  height: 250px !important; /* 🔽 Reduce height */
+  border-radius: 8px;
+}

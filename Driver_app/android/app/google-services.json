@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "862391940729",
+    "firebase_url": "https://sensors-data-fe6f3-default-rtdb.firebaseio.com",
+    "project_id": "sensors-data-fe6f3",
+    "storage_bucket": "sensors-data-fe6f3.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:862391940729:android:c2112ca683312488eb86a8",
+        "android_client_info": {
+          "package_name": "com.driver_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAwexM6vccd7tOA08Wi7ViNpRY_HfJmt2k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:862391940729:android:5fe259b25fcaed7beb86a8",
+        "android_client_info": {
+          "package_name": "com.driverapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAwexM6vccd7tOA08Wi7ViNpRY_HfJmt2k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

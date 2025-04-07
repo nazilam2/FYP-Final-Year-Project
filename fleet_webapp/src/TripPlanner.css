@@ -1,0 +1,217 @@
+/* 🌍 General Layout */
+.trip-dashboard {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    padding: 10px;
+    background-color: #f5f5f5;
+    gap: 20px;
+    overflow: hidden;
+}
+
+.top-section {
+    display: flex;
+    gap: 20px;
+}
+
+.left-column {
+    flex: 2;
+    display: flex;
+    flex-direction: column;
+}
+
+.trip-map-container {
+    flex: 1;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #ddd;
+    background-color: white;
+}
+
+.right-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.trip-form-container {
+    flex: 1;
+    padding: 20px;
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* 🟢 BOTTOM SECTION (Trips List & Calendar) */
+.bottom-section {
+    display: flex;
+    gap: 20px;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.trips-container {
+    flex: 3; /* Made wider */
+    min-width: 430px; 
+    max-height: 400px; /* Equal height for columns */
+    overflow-y: auto; /* Scrollable */
+    border-radius: 12px;
+    background-color: white;
+    box-shadow: 0px 3px 10px rgba(0,0,0,0.1);
+    padding: 15px;
+}
+
+.calendar-estimated-container {
+    flex: 1;
+    border-radius: 12px;
+    background-color: white;
+    box-shadow: 0px 3px 10px rgba(0,0,0,0.1);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* 🔥 Scroll Without Scrollbar for Trip Containers */
+.trips-container {
+    overflow-y: auto;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE 10+ */
+}
+
+.trips-container::-webkit-scrollbar { /* Chrome, Safari, Edge */
+    display: none;
+}
+
+.trip-heading {
+    font-size: 22px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+.trip-grid {
+    display: grid;
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.trip-card {
+    background: white;
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    transition: 0.3s;
+    cursor: pointer;
+}
+
+.trip-card:hover {
+    background: #eef2ff;
+}
+
+.completed {
+    border-left: 5px solid #28a745;
+}
+
+/* 📌 Calendar & Estimated Time Container (no scroll) */
+.calendar-container, .estimated-time-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.react-datepicker {
+    width: 100%;
+    border-radius: 12px;
+    box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.15);
+}
+
+.estimated-time {
+    font-size: 16px;
+    font-weight: bold;
+    color: #007bff;
+    padding: 10px;
+    border-radius: 8px;
+    background-color: #f3f8ff;
+    text-align: center;
+    min-height: 40px;
+}
+
+/* Hide Scrollbar for Webkit Browsers */
+.trips-container::-webkit-scrollbar {
+    display: none;
+}
+
+/* 🌟 Enhanced Styling for Trip Form 🌟 */
+.form-title {
+    font-size: 32px;
+    margin-bottom: 20px;
+    font-weight: bold;
+    color: #333;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 15px;
+}
+
+.form-label {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: #444;
+}
+
+.form-input, select.form-input {
+    padding: 12px 16px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    font-size: 16px;
+    background-color: #f3f8ff;
+    outline: none;
+}
+
+.form-input:focus, select.form-input:focus {
+    border-color: #3399ff;
+}
+
+.error-message {
+    color: #ff4d4d;
+    font-weight: bold;
+    margin: 10px 0;
+    padding: 8px;
+    border-radius: 8px;
+    background-color: #ffeded;
+}
+
+.create-trip-btn {
+    background-color: #3399ff;
+    padding: 14px 18px;
+    font-size: 18px;
+    font-weight: bold;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.create-trip-btn:hover {
+    background-color: #007acc;
+    transform: translateY(-2px);
+}
+
+.create-trip-btn:disabled {
+    background-color: #b3d9ff;
+    cursor: not-allowed;
+}
+
+/* 🎯 RESPONSIVENESS */
+@media (max-width: 1024px) {
+    .top-section, .bottom-section {
+        flex-direction: column;
+    }
+}
