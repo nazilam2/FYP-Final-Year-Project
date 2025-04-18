@@ -1,13 +1,27 @@
+/** 
+ * Name: Nazila Malekzadah C21414344
+ * Date: 11/04/2025
+ * Description: Displa all drivers trips ongoing and completed
+ * Features: 
+ * - fetch drivers
+ * - view real-time map route from current location
+ * - makr trip as complete 
+ * - launch native navigation to destination
+ */
+
+// import lib
 import React, { useEffect, useState } from "react";
 import { View, Text, FlatList, ActivityIndicator, StyleSheet, TouchableOpacity, TextInput, Linking, Platform, ScrollView } from "react-native";
 import firestore from "@react-native-firebase/firestore";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { WebView } from "react-native-webview"; // ✅ Use WebView for Leaflet
+import { WebView } from "react-native-webview"; 
 import polyline from "@mapbox/polyline";
 
 const ORS_API_KEY = "5b3ce3597851110001cf624870ee4fdffebe4466afe36ccea5eac325";
 
 const DriverTripsScreen = () => {
+
+  // state management 
   const [loading, setLoading] = useState(false);
   const [trips, setTrips] = useState([]);
   const [selectedTrip, setSelectedTrip] = useState(null);
@@ -16,7 +30,7 @@ const DriverTripsScreen = () => {
   const [currentCoords, setCurrentCoords] = useState(null);
   const [selectedTab, setSelectedTab] = useState('ongoing');
 
-
+  // fetch user ID and lates GPS 
   useEffect(() => {
     const fetchUserIdAndGPS = async () => {
       try {
@@ -38,12 +52,12 @@ const DriverTripsScreen = () => {
     fetchUserIdAndGPS();
   }, []);
   
-
-  // ✅ Fetch trips from Firestore for the logged-in driver
+  // get all trips for the user 
   const fetchTrips = async (userId) => {
     try {
       const tripsRef = firestore().collection("users").doc(userId).collection("trips");
   
+      // real time trips updates
       const unsubscribe = tripsRef.onSnapshot((snapshot) => {
         const driverTrips = snapshot.docs.map((doc) => ({
           id: doc.id,
@@ -61,6 +75,7 @@ const DriverTripsScreen = () => {
     }
   };
 
+  // update Firestore trip status to complete
   const markTripAsComplete = async (tripId) => {
     try {
       const userId = await AsyncStorage.getItem("userId");
@@ -85,6 +100,7 @@ const DriverTripsScreen = () => {
     }
   };
   
+  // get most recent GPS data from firestore
   const fetchLatestGPSData = async (userId) => {
     try {
       const snapshot = await firestore()
@@ -111,8 +127,7 @@ const DriverTripsScreen = () => {
     }
   };
   
-
-  // ✅ Convert address to coordinates using OpenRouteService
+  // convert address to lat/lng using openrouteservice
   const geocodeAddress = async (address) => {
     const apiUrl = `https://api.openrouteservice.org/geocode/search?api_key=${ORS_API_KEY}&text=${encodeURIComponent(address)}`;
 
@@ -135,7 +150,7 @@ const DriverTripsScreen = () => {
     }
   };
 
-  // ✅ Fetch Route from OpenRouteService
+  // generate driving route 
   const fetchRoute = async (startAddress, destinationAddress) => {
     if (!startAddress || !destinationAddress) return;
 
@@ -173,7 +188,7 @@ const DriverTripsScreen = () => {
         return;
       }
 
-      // ✅ Decode polyline geometry
+      // decode polyline geometry
       const encodedPolyline = data.routes[0]?.geometry;
       if (!encodedPolyline) {
         setErrorMessage("Route data is missing or invalid.");
@@ -182,7 +197,7 @@ const DriverTripsScreen = () => {
         return;
       }
 
-      // 🔥 Decode the polyline geometry
+      // decode the polyline geometry
       const decodedRoute = polyline.decode(encodedPolyline).map(([lat, lng]) => [lat, lng]);
 
       setRoute(decodedRoute);
@@ -194,13 +209,11 @@ const DriverTripsScreen = () => {
     setLoading(false);
   };
 
-  // ✅ When a trip is selected, fetch the route
+  // when a trip is selected, fetch the route
   const handleTripSelect = async (trip) => {
     setSelectedTrip(trip);
     setLoading(true);
-  
     const userId = await AsyncStorage.getItem("userId");
-    
     const gpsRef = firestore()
       .collection("users")
       .doc(userId)
@@ -215,8 +228,8 @@ const DriverTripsScreen = () => {
           latitude: latestData.data.GPS.Latitude,
           longitude: latestData.data.GPS.Longitude,
         };
-  
-        // Fetch and update route with new GPS coords
+      
+        // fetch and update route with new GPS coords
         fetchRouteWithFirestoreGPS(coords, trip.destinationAddress);
       }
     }, error => {
@@ -264,19 +277,18 @@ const DriverTripsScreen = () => {
   
     setLoading(false);
   };
-  
-  
 
-  // ✅ Generate HTML for WebView (Leaflet Map)
+  // generate HTML for webview 
   const generateMapHtml = () => {
     const start = route.length > 0
       ? route[0]
       : currentCoords
         ? [currentCoords.latitude, currentCoords.longitude]
-        : [53.349805, -6.26031]; // fallback to Dublin coords
+        : [53.349805, -6.26031]; // Dublin location on defualt 
   
     const polylineString = JSON.stringify(route);
-  
+
+    // get map
     return `
       <!DOCTYPE html>
       <html style="height:100%; width:100%; margin:0; padding:0;">
@@ -314,11 +326,9 @@ const DriverTripsScreen = () => {
     `;
   };
   
-  
-  
   return (
     <View style={styles.container}>
-      {/* 🗺️ Map at the top */}
+      {/** Map section*/}
       {(currentCoords || route.length > 0) && (
         <View style={styles.mapWrapper}>
           <WebView
@@ -331,12 +341,12 @@ const DriverTripsScreen = () => {
         </View>
       )}
   
-      {/* 🔻 Curved bottom card */}
+      {/** bottom card*/}
       <View style={styles.bottomSheet}>
         {loading && <ActivityIndicator size="large" color="#007bff" />}
         {errorMessage ? <Text style={styles.error}>{errorMessage}</Text> : null}
   
-        {/* 🔘 Tabs */}
+        {/** Tabs*/}
         <View style={styles.tabContainer}>
           <TouchableOpacity
             style={[styles.tabButton, selectedTab === 'ongoing' && styles.activeTab]}
@@ -347,6 +357,7 @@ const DriverTripsScreen = () => {
           >
             <Text style={styles.tabText}>Ongoing</Text>
           </TouchableOpacity>
+
           <TouchableOpacity
             style={[styles.tabButton, selectedTab === 'completed' && styles.activeTab]}
             onPress={() => {
@@ -358,7 +369,7 @@ const DriverTripsScreen = () => {
           </TouchableOpacity>
         </View>
   
-        {/* 📋 Trip list */}
+        {/** Trip list*/}
         <FlatList
           data={trips.filter(trip => 
             trip.status === (selectedTab === 'ongoing' ? 'pending' : 'complete') &&
@@ -377,7 +388,7 @@ const DriverTripsScreen = () => {
           )}
         />
   
-        {/* 📦 Trip details + action buttons */}
+        {/** Trip details and action buttons*/}
         {selectedTrip && (
           <View style={styles.tripDetails}>
             <Text style={styles.detailText}><Text style={styles.label}>Start:</Text> {selectedTrip.startAddress}</Text>
@@ -414,7 +425,7 @@ const DriverTripsScreen = () => {
   );
   
 };
-
+// style section
 const styles = StyleSheet.create({
   container: {
     flex: 1,

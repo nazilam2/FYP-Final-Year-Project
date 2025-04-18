@@ -1,8 +1,10 @@
+import React from 'react';
 import { render, screen } from '@testing-library/react';
-import App from './App';
+import App from './App'; // make sure path is correct
 
-test('renders learn react link', () => {
+test('renders login form', () => {
   render(<App />);
-  const linkElement = screen.getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
+  expect(screen.getByText(/login/i)).toBeInTheDocument();
+  expect(screen.getByPlaceholderText(/enter your email/i)).toBeInTheDocument();
+  expect(screen.getByPlaceholderText(/enter your password/i)).toBeInTheDocument();
 });

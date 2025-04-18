@@ -1,30 +1,46 @@
+/** 
+ * Name: Nazila Malekzadah C21414344
+ * Date: 11/04/2025
+ * Description: Main entry point for the driver's home UI 
+ * Features: 
+ * - wecome screen with user greeting 
+ * - quick aceess to other screens
+ * - displat ongoing todays trips
+ * - buttom tab naviagtion 
+ */
+
+// import lib
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 import { useNavigation } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import Ionicons from 'react-native-vector-icons/Ionicons'; 
+
+// Screens 
 import DriveMonitoring from './DriveMonitoring';
 import MetricsScreen from './MetricsScreen';
 import DriverTripsScreen from './DriverTripsScreen';
-import Ionicons from 'react-native-vector-icons/Ionicons'; // Import Ionicons
 
-
+// home page component
 const HomePage = () => {
   const navigation = useNavigation();
   const [userName, setUserName] = useState('');
   const [ongoingTrips, setOngoingTrips] = useState([]);
 
+  // fetch user and trip data 
   useEffect(() => {
     const currentUser = auth().currentUser;
     if (currentUser) {
       let name = currentUser.displayName || (currentUser.email?.split('@')[0] || 'User');
-      name = name.split(/[\s.]/)[0]; // Extract first name
+      name = name.split(/[\s.]/)[0]; // get first name 
       setUserName(name);
       fetchOngoingTrips(currentUser.uid);
     }
   }, []);
 
+  // get users ongoing trips from firestore 
   const fetchOngoingTrips = async (userId) => {
     try {
       const tripsRef = firestore().collection('users').doc(userId).collection('trips');
@@ -38,13 +54,15 @@ const HomePage = () => {
 
   return (
     <View style={styles.container}>
-      {/* Welcome Card */}
+    
+      {/** welcome page */}
       <View style={styles.welcomeCard}>
         <Text style={styles.welcomeText}>👋 Welcome, {userName}!</Text>
         <Text style={styles.subtitle}>Let's get you started!</Text>
       </View>
 
-      {/* Categories Section */}
+
+      {/** categories section */}
       <Text style={styles.sectionTitle}>Category</Text>
       <FlatList
       data={[
@@ -60,28 +78,28 @@ const HomePage = () => {
           <Ionicons name={item.icon} size={30} color="white" />
           <Text style={styles.categoryText}>{item.title}</Text>
         </TouchableOpacity>
-  )}
-  contentContainerStyle={{ paddingBottom: 0, marginBottom: 0 }} // ⬇ Reduce extra space below
-/>
+      )}
+      contentContainerStyle={{ paddingBottom: 0, marginBottom: 0 }}
+    />
 
-
-      {/* Today's Trips Section */}
-      <View style={styles.todaysTripsContainer}>
-        <Text style={styles.sectionTitle}>Today's Trips</Text>
-        <FlatList
-          data={ongoingTrips}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <TouchableOpacity style={styles.tripCard} onPress={() => navigation.navigate('DriverTrips', { tripId: item.id })}>
-              <Text style={styles.tripText}>{item.destinationAddress}</Text>
-            </TouchableOpacity>
-          )}
-        />
-      </View>
+    {/** Todays trips section */}
+    <View style={styles.todaysTripsContainer}>
+      <Text style={styles.sectionTitle}>Today's Trips</Text>
+      <FlatList
+        data={ongoingTrips}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <TouchableOpacity style={styles.tripCard} onPress={() => navigation.navigate('DriverTrips', { tripId: item.id })}>
+            <Text style={styles.tripText}>{item.destinationAddress}</Text>
+          </TouchableOpacity>
+        )}
+      />
     </View>
+  </View>
   );
 };
 
+// button tab navigation
 const Tab = createBottomTabNavigator();
 
 const AppNavigator = () => {
@@ -90,14 +108,14 @@ const AppNavigator = () => {
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarStyle: styles.tabBar,
-        tabBarShowLabel: false, // Hide text labels
+        tabBarShowLabel: false, 
         tabBarIcon: ({ color, size }) => {
           let iconName;
 
           if (route.name === 'Home') {
             iconName = 'home-outline';
           } else if (route.name === 'Monitoring') {
-            iconName = 'eye-outline'; // 👁 Changed for face monitoring
+            iconName = 'eye-outline'; 
           } else if (route.name === 'Trips') {
             iconName = 'car-outline';
           } else if (route.name === 'Metrics') {
@@ -108,8 +126,8 @@ const AppNavigator = () => {
 
           return <Ionicons name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: 'white', // Active icon color
-        tabBarInactiveTintColor: '#D1D1D6', // Inactive icon color
+        tabBarActiveTintColor: 'white', // active icong color 
+        tabBarInactiveTintColor: '#D1D1D6', //inactive icon color
       })}
     >
       <Tab.Screen name="Home" component={HomePage} />
@@ -121,6 +139,7 @@ const AppNavigator = () => {
   );
 };
 
+// style section 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -156,11 +175,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 15,
-    marginBottom: 0, // ⬇ This reduces space below each category card
+    marginBottom: 0, 
 
     width: 120, 
-    height: 230,  // ⬆ Increased height for better spacing
-    paddingBottom: 15, // ⬆ Adds more space below text
+    height: 230,  
+    paddingBottom: 15, 
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -173,7 +192,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 14,
     textAlign: 'center',
-    marginTop: 5, // Space below the icon
+    marginTop: 5, 
   },
   
   todaysTripsContainer: {

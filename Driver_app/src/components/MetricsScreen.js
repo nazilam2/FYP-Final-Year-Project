@@ -1,11 +1,22 @@
+/** 
+ * Name: Nazila Malekzadah C21414344
+ * Date: 11/04/2025
+ * Description: display a visual metrics for a driver's trips, safety, health, and vhicle stats 
+ * Features: 
+ * - fetch data from firestore + asyncdtorage and render dynamic charts using the Charts compoment 
+ */
+
+// import lib
 import React, { useEffect, useState } from "react";
 import { TouchableOpacity, Text,View, ActivityIndicator, StyleSheet, ScrollView,ImageBackground  } from "react-native";
 import firestore from "@react-native-firebase/firestore";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import Charts from "./Charts";
+import Charts from "./Charts"; // import the reusable chat UI componrnt 
 
 
 const MetricsScreen = ({ navigation }) => {
+
+  // states for holding metric data 
   const [loading, setLoading] = useState(true);
   const [trips, setTrips] = useState([]);
   const [avgSpeeds, setAvgSpeeds] = useState([]);
@@ -17,20 +28,21 @@ const MetricsScreen = ({ navigation }) => {
   const [heartRateData, setHeartRateData] = useState([]);
   const [selectedMetric, setSelectedMetric] = useState("Trip Metrics");
 
-
+  // constrins for calculations
   const TIME_GAP_THRESHOLD = 5 * 60 * 1000;
   const BRAKING_THRESHOLD = 8;
   const SPEED_CONVERSION_FACTOR = 0.01;
   const EMPTY_FUEL_VALUE = 272;
   const FULL_FUEL_VALUE = 65535;
 
+  // fetch user ID and iniate pulls 
   useEffect(() => {
     const fetchUserId = async () => {
       try {
         const userId = await AsyncStorage.getItem("userId");
         if (userId) {
-          fetchSensorData(userId);
-          fetchAlertData(userId);   // ✅ Fetch drowsiness & coffee break alerts
+          fetchSensorData(userId); // load driving metrics
+          fetchAlertData(userId);  // load alerts 
 
         }
       } catch (error) {
@@ -41,13 +53,13 @@ const MetricsScreen = ({ navigation }) => {
     fetchUserId();
   }, []);
 
-  // ✅ Fetch alerts from Firestore
+  // fetch alert count - coffee break, drowsiness from  firestore 
   const fetchAlertData = async (userId) => {
     try {
       const snapshot = await firestore()
         .collection("users")
         .doc(userId)
-        .collection("alerts") // ✅ Read alerts from Firestore
+        .collection("alerts") 
         .get();
 
       let drowsyAlerts = 0;
@@ -59,8 +71,8 @@ const MetricsScreen = ({ navigation }) => {
         if (data.type === "coffee_break") coffeeAlerts++;
       });
 
-      console.log("🔵 Total Drowsiness Alerts:", drowsyAlerts);
-      console.log("🟠 Total Coffee Break Alerts:", coffeeAlerts);
+      console.log("Total Drowsiness Alerts:", drowsyAlerts);
+      console.log("Total Coffee Break Alerts:", coffeeAlerts);
       
       setDrowsinessCount(drowsyAlerts);
       setCoffeeBreakCount(coffeeAlerts);
@@ -69,6 +81,7 @@ const MetricsScreen = ({ navigation }) => {
     }
   };
 
+  // fetch all trip related sensor data 
   const fetchSensorData = async (userId) => {
     try {
       const snapshot = await firestore()
@@ -78,7 +91,7 @@ const MetricsScreen = ({ navigation }) => {
         .orderBy("timestamp", "desc")
         .get();
       
-
+      // parse raw sensor readings 
       const rawSensorData = snapshot.docs.map((doc) => {
         const data = doc.data();
         return {
@@ -92,6 +105,7 @@ const MetricsScreen = ({ navigation }) => {
       console.log("Raw Sensor Data:", rawSensorData);
       rawSensorData.sort((a, b) => a.timestamp - b.timestamp);
 
+      // process trips, braking, speed 
       let tripData = [];
       let avgSpeedsArr = [];
       let brakingCounts = [];
@@ -101,6 +115,7 @@ const MetricsScreen = ({ navigation }) => {
       let lastSpeed = 0;
 
       rawSensorData.forEach((entry) => {
+        // trip separator 5+ mins
         if (lastTimestamp && entry.timestamp - lastTimestamp > TIME_GAP_THRESHOLD) {
           const avgSpeed = currentTrip.length > 0
             ? Math.round(currentTrip.reduce((sum, e) => sum + e.speed, 0) / currentTrip.length)
@@ -114,6 +129,7 @@ const MetricsScreen = ({ navigation }) => {
           lastSpeed = 0;
         }
 
+        // calculatr speed and braking from accelerometer
         const { x, y, z } = entry.accelerometer;
         let harshBraking = false;
         let accelerationMag = Math.sqrt(x ** 2 + y ** 2 + z ** 2);
@@ -142,6 +158,7 @@ const MetricsScreen = ({ navigation }) => {
         lastSpeed = newSpeed;
       });
 
+      // push final trip 
       if (currentTrip.length > 0) {
         const avgSpeed = currentTrip.length > 0
           ? Math.round(currentTrip.reduce((sum, e) => sum + e.speed, 0) / currentTrip.length)
@@ -153,10 +170,12 @@ const MetricsScreen = ({ navigation }) => {
         console.log("Final Harsh Braking Count:", brakingCounts[brakingCounts.length - 1]);
       }
 
+      // update state with trip metrics
       setTrips(tripData);
       setAvgSpeeds(avgSpeedsArr);
       setBrakingEvents(brakingCounts);
 
+      // fuel level calculation
       if (rawSensorData.length > 0) {
         let rawFuel = rawSensorData[rawSensorData.length - 1]?.potentiometer;
 
@@ -166,20 +185,20 @@ const MetricsScreen = ({ navigation }) => {
             console.warn("⚠️ Potentiometer value missing! Defaulting to empty tank.");
             rawFuel = EMPTY_FUEL_VALUE;
         }
-
-        // Ensure values are within expected range
+        // esnure values are within expected rnage
         rawFuel = Math.max(EMPTY_FUEL_VALUE, Math.min(FULL_FUEL_VALUE, rawFuel));
 
         let fuelPercent = ((rawFuel - EMPTY_FUEL_VALUE) / (FULL_FUEL_VALUE - EMPTY_FUEL_VALUE)) * 100;
 
-        // Ensure percentage stays between 0-100%
+        // ensure percentage satys between 0 - 100 %
         fuelPercent = Math.max(0, Math.min(100, fuelPercent));
 
-        console.log(`⛽ Calculated Fuel Percentage: ${fuelPercent}%`);
+        console.log(`Calculated Fuel Percentage: ${fuelPercent}%`);
 
         setFuelLevel(Math.round(fuelPercent));
     }
 
+      // trips per day
       const tripsPerDayMap = {};
       tripData.forEach(trip => {
         const tripDate = new Date(trip[0].timestamp).toISOString().split("T")[0];
@@ -190,12 +209,13 @@ const MetricsScreen = ({ navigation }) => {
       const tripsCount = sortedDates.map(dateKey => tripsPerDayMap[dateKey]);
       setTripsPerDay({ labels: sortedDates, counts: tripsCount });
 
-      //fetching heart rate data 
+      
+      // fetching heart rate data 
       const heartRates = snapshot.docs.map((doc) => {
         const data = doc.data();
         return {
           timestamp: data.timestamp?.toDate().getTime() || new Date().getTime(),
-          heartRate: data.data?.["Heart Rate"] || 0, // Ensure field name is correct
+          heartRate: data.data?.["Heart Rate"] || 0, 
         };
       });
   
@@ -211,6 +231,7 @@ const MetricsScreen = ({ navigation }) => {
     }
   };
 
+  // load while fetching 
   if (loading) {
     return <ActivityIndicator size="large" color="#0000ff" />;
   }
@@ -218,17 +239,16 @@ const MetricsScreen = ({ navigation }) => {
   return (
     <ScrollView style={styles.container}>
       
-      {/* ✅ Top Background Image */}
+      {/** top banner backgound image */}
       <View style={styles.topContainer}>
         <ImageBackground
           source={require("../../assets/images/background1.jpg")}
           style={styles.backgroundImage}
         >
-          {/* You can add user profile pic or other elements here */}
         </ImageBackground>
       </View>
   
-      {/* ✅ Scrollable Metric Selection Buttons */}
+      {/** Metric selection (horizontal scroll) */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.metricButtons}>
         {["Trip Metrics", "Safety Metrics", "Health Metrics", "Vehicle Metrics"].map((metric) => (
           <TouchableOpacity
@@ -249,7 +269,7 @@ const MetricsScreen = ({ navigation }) => {
         ))}
       </ScrollView>
   
-      {/* ✅ Curved Chart Container */}
+      {/**chart continer */}
       <View style={styles.chartContainer}>
         {selectedMetric === "Trip Metrics" && (
           <Charts selectedMetric={selectedMetric} trips={trips} avgSpeeds={avgSpeeds} tripsPerDay={tripsPerDay} />
@@ -271,31 +291,27 @@ const MetricsScreen = ({ navigation }) => {
     </ScrollView>
   );
   
-  
-  
 };
-
+// style section
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    //padding: 10,
     backgroundColor: "#f5f5f5",
   },
   topContainer: {
     width: "100%",
-    height: 220,  // Increase height to fully cover the top section
+    height: 220,
     position: "relative",
-    borderBottomLeftRadius: 10,  // Curved bottom left
-    borderBottomRightRadius: 10, // Curved bottom right
-    overflow: "hidden",  // Ensures the image does not overflow the curved edges
+    borderBottomLeftRadius: 10,  
+    borderBottomRightRadius: 10, 
+    overflow: "hidden", 
   },
   buttonContainer: {
     flexDirection: "row",
     justifyContent: "space-around",
     marginBottom: 10,
     paddingVertical: 10,
-    backgroundColor: "#f0f0f0", // Light background for contrast
-    borderRadius: 10,
+    backgroundColor: "#f0f0f0", 
   },
   button: {
     paddingVertical: 10,
@@ -304,7 +320,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   selectedButton: {
-    backgroundColor: "#007bff", // Blue color for selected button
+    backgroundColor: "#007bff", 
   },
   buttonText: {
     color: "black",
@@ -314,12 +330,10 @@ const styles = StyleSheet.create({
     color: "white",
   },
   backgroundImage: {
-    position: "absolute", // Make the image cover the entire top container
-    top: 0,
-    left: 0,
+    position: "absolute", 
     width: "100%",
     height: "100%",
-    resizeMode: "cover",  // Ensures it covers without stretching
+    resizeMode: "cover", 
   },
   metricButtons: {
     flexDirection: "row",
@@ -334,7 +348,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 8,
   },
   selectedMetricButton: {
-    backgroundColor: "#000", // Black background when selected
+    backgroundColor: "#000",
   },
   metricText: {
     fontSize: 14,
@@ -342,23 +356,18 @@ const styles = StyleSheet.create({
     color: "#555",
   },
   selectedMetricText: {
-    color: "#FFF", // White text when selected
+    color: "#FFF", 
   },
   chartContainer: {
-    width: "100%", // Makes it take full width
-    backgroundColor: "#FFFFFF", // Light blue background
-    borderTopLeftRadius: 30, // Curve top left
-    borderTopRightRadius: 30, // Curve top right
+    width: "100%", 
+    backgroundColor: "#FFFFFF", 
+    borderTopLeftRadius: 30, 
+    borderTopRightRadius: 30, 
     padding: 10,
     paddingBottom: 50,
     marginTop: 10,
-    elevation: 5, // Shadow effect
+    elevation: 5, 
   },
-  
-  
-  
-  
-  
 });
 
 export default MetricsScreen;

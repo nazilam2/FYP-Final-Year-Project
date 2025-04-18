@@ -1,9 +1,17 @@
+/** 
+ * Name: Nazila Malekzadah C21414344
+ * Date: 11/04/2025
+ * Description: allow users to login 
+ */
+
+// import lib
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import auth from '@react-native-firebase/auth';
-import firestore from '@react-native-firebase/firestore'; // Import Firestore
-import AsyncStorage from '@react-native-async-storage/async-storage'; // Import AsyncStorage
+import firestore from '@react-native-firebase/firestore'; 
+import AsyncStorage from '@react-native-async-storage/async-storage'; 
 
+// login form 
 const LoginForm = ({ navigation }) => {
   const [formData, setFormData] = useState({
     email: '',
@@ -49,7 +57,7 @@ const LoginForm = ({ navigation }) => {
       });
     } catch (error) {
       console.error('Login error:', error);
-      setErrorMessage('Invalid email or password.');  // Update error message
+      setErrorMessage('Invalid email or password.');  
     } finally {
       setLoading(false);
     }

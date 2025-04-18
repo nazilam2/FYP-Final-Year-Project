@@ -1,3 +1,10 @@
+/** 
+ * Name: Nazila Malekzadah C21414344
+ * Date: 11/04/2025
+ * Description: allow users to ragester
+ */
+
+// import lib
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import auth from '@react-native-firebase/auth';
@@ -69,7 +76,7 @@ const Regis = ({ navigation }) => {
     <View style={styles.container}>
       <Text style={styles.header}>Registration</Text>
 
-      {/* Error message display */}
+      
       {errorMessage ? <Text style={styles.error}>{errorMessage}</Text> : null}
 
       {/* Form Type Toggle */}

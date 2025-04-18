@@ -1,31 +1,37 @@
+/** 
+ * Name: Nazila Malekzadah C21414344
+ * Date: 11/04/2025
+ * Description: renders visual charts for various driving metrics
+ * Features: 
+ * - display charts, use data from firestore and vosualized them in charts 
+ */
+
+// import lib
 import React, { useState, useEffect } from "react";
 import { View, Text, ScrollView, Dimensions, StyleSheet } from "react-native";
 import { LineChart, BarChart, PieChart, XAxis, YAxis, Grid } from "react-native-svg-charts";
 import * as d3 from "d3-shape";
 import { Defs, LinearGradient, Stop, Svg, Circle, G, Text as SvgText } from "react-native-svg";
-import database from '@react-native-firebase/database'; // Firebase Integration
-import VerticalGridLines from "./VerticalGridLines"; // ✅ Import the component
+import database from '@react-native-firebase/database'; 
+import VerticalGridLines from "./VerticalGridLines"; 
 
 const screenWidth = Dimensions.get("window").width - 20;
 
 const Charts = ({ selectedMetric, avgSpeeds, brakingEvents, tripsPerDay, drowsinessCount = 0, coffeeBreakCount = 0, heartRateData, fuelLevel }) => {
-  //const [fuelLevel, setFuelLevel] = useState(100); // Default: Full Tank
-  console.log("📊 Debugging Pie Chart Data:");
-  console.log("☕ Coffee Break Count:", coffeeBreakCount);
-  console.log("⚠️ Drowsiness Count:", drowsinessCount);
+  
+  console.log("Debugging Pie Chart Data:");
+  console.log("Coffee Break Count:", coffeeBreakCount);
+  console.log("Drowsiness Count:", drowsinessCount);
 
-
+  // prepare alert data for pi chart 
   const alertsData = [
     { key: "coffee", value: coffeeBreakCount, svg: { fill: "#7A5FFF" }, label: "Coffee Break" },
     { key: "drowsiness", value: drowsinessCount, svg: { fill: "#FF6666" }, label: "Drowsiness" },
-  ].filter(item => item.value > 0); // Ensure only non-zero values are included
-
-
+  ].filter(item => item.value > 0); //ensure only non-zero values are imported
 
   const hasAlertData = (coffeeBreakCount ?? 0) + (drowsinessCount ?? 0) > 0;
 
-
-
+  // listen for real-time fuel updates from firebase 
   useEffect(() => {
     const ref = database().ref("/sensor/fuel_level");
     const listener = ref.on("value", (snapshot) => {
@@ -41,25 +47,27 @@ const Charts = ({ selectedMetric, avgSpeeds, brakingEvents, tripsPerDay, drowsin
     return () => ref.off("value", listener);
   }, []);
 
+  // convert resistance reading to percentage fuel level 
   const mapResistanceToFuelLevel = (resistance) => {
     console.log(`🚗 Raw Fuel Sensor Resistance: ${resistance}`);
 
     const minResistance = 272;
     const maxResistance = 65535;
 
-    // Keep resistance within expected bounds
+    // clam to valid range 
     if (resistance < minResistance) resistance = minResistance;
     if (resistance > maxResistance) resistance = maxResistance;
 
     let fuelLevel = ((maxResistance - resistance) / (maxResistance - minResistance)) * 100;
 
-    // Ensure percentage stays between 0-100%
+    // ensure percentage stays between 0 - 100%
     fuelLevel = Math.max(0, Math.min(100, fuelLevel));
 
-    console.log(`⛽ Calculated Fuel Level: ${fuelLevel}%`);
+    console.log(`Calculated Fuel Level: ${fuelLevel}%`);
     return Math.round(fuelLevel);
   };
 
+  // label renderer for pi chart values 
   const Labels = ({ slices }) => {
     return slices.map((slice, index) => {
       if (!slice || !slice.pieCentroid || !slice.data) return null;
@@ -82,28 +90,21 @@ const Charts = ({ selectedMetric, avgSpeeds, brakingEvents, tripsPerDay, drowsin
     });
   };
 
-
-  // heart rate data 
- 
-
+  // extract heart rate values and timestamps 
   const heartRates = heartRateData?.map((item) => item.heartRate) || [];
   const timestamps = heartRateData?.map((item) => 
   new Date(item.timestamp || Date.now()).toLocaleTimeString()
 ) || [];
 
-  console.log(`🟢 Fuel Level: ${fuelLevel}%`);
-  console.log(`🟢 strokeDasharray Value: ${(fuelLevel / 100) * 565} 565`);
-  console.log("🚀 Pie Chart Data:", JSON.stringify(alertsData, null, 2));
+  console.log(`Fuel Level: ${fuelLevel}%`);
+  console.log(`strokeDasharray Value: ${(fuelLevel / 100) * 565} 565`);
+  console.log("Pie Chart Data:", JSON.stringify(alertsData, null, 2));
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-
-      {/* Debugging Logs */}
-
-       {/* Trip Metrics */}
-    {selectedMetric === "Trip Metrics" && (     
+      {selectedMetric === "Trip Metrics" && (     
         <>
-        {/* Average Speed Per Trip */}
+        {/** avg speed per trip */}
         <View style={styles.chartContainer}>
           <Text style={styles.chartTitle}>Average Speed per Trip</Text>
           <View style={styles.chartWrapper}>
@@ -137,7 +138,7 @@ const Charts = ({ selectedMetric, avgSpeeds, brakingEvents, tripsPerDay, drowsin
           />
         </View>
 
-        {/* Trips Per Day */}
+        {/** trips per day */}
         <View style={styles.chartContainer}>
           <Text style={styles.chartTitle}>Trips Per Day</Text>
           <View style={styles.chartWrapper}>
@@ -175,11 +176,10 @@ const Charts = ({ selectedMetric, avgSpeeds, brakingEvents, tripsPerDay, drowsin
         </>
       )} 
 
-    {/* Safety Metrics */}
-    {selectedMetric === "Safety Metrics" && (
-    <>
-
-        {/* Harsh Braking Events */}
+      {/** safety metrics */}
+      {selectedMetric === "Safety Metrics" && (
+      <>
+        {/** harsh breaking even */}
         <View style={styles.chartContainer}>
           <Text style={styles.chartTitle}>Harsh Braking</Text>
           <View style={styles.chartWrapper}>
@@ -208,11 +208,10 @@ const Charts = ({ selectedMetric, avgSpeeds, brakingEvents, tripsPerDay, drowsin
           />
         </View>
 
-        {/*  Alert    */}
+        {/** alerts charts */}
         <View style={styles.chartContainer}>
           <Text style={styles.chartTitle}>Alerts</Text>
 
-          {/* Centered Pie Chart */}
           <View style={styles.pieChartContainer}>
             {hasAlertData ? (
               <PieChart
@@ -230,7 +229,7 @@ const Charts = ({ selectedMetric, avgSpeeds, brakingEvents, tripsPerDay, drowsin
             )}
           </View>
 
-          {/* Legends: Side-by-Side at Bottom */}
+          {/** legends side by side at buttom */}
           <View style={styles.legendContainer}>
             {alertsData.map((item, index) => (
               <View key={index} style={styles.legendItem}>
@@ -241,72 +240,63 @@ const Charts = ({ selectedMetric, avgSpeeds, brakingEvents, tripsPerDay, drowsin
           </View>
         </View>
         </>
-    )}
+      )}
 
-    
-    {/* Health Metrics */}
-    {/* ❤️ Health Metrics */}
-{/* ❤️ Health Metrics */}
-{/* ❤️ Health Metrics */}
-{selectedMetric === "Health Metrics" && (
-  <View style={styles.chartContainer}>
-    <Text style={styles.chartTitle}>Heart Rate Over Time</Text>
+    {/** Health metrics */}
+    {selectedMetric === "Health Metrics" && (
+      <View style={styles.chartContainer}>
+        <Text style={styles.chartTitle}>Heart Rate Over Time</Text>
 
-    {/* ✅ Ensure heartRateData is always an array */}
-    {Array.isArray(heartRateData) && heartRateData.length > 0 ? (
-      <View style={styles.chartWrapper}>
-        {/* Y-Axis */}
-        <YAxis
-          data={heartRateData?.map((item) => item.heartRate) || []}
-          contentInset={{ top: 20, bottom: 20 }}
-          svg={{ fill: "grey", fontSize: 12 }}
-          formatLabel={(value) => `${value} BPM`}
-        />
+        {/** ensure heartrate data is alwyase an array */}
+        {Array.isArray(heartRateData) && heartRateData.length > 0 ? (
+          <View style={styles.chartWrapper}>
+            {/* Y-Axis */}
+            <YAxis
+              data={heartRateData?.map((item) => item.heartRate) || []}
+              contentInset={{ top: 20, bottom: 20 }}
+              svg={{ fill: "grey", fontSize: 12 }}
+              formatLabel={(value) => `${value} BPM`}
+            />
 
-        {/* Line Chart */}
-        <View style={{ flex: 1 }}>
-          <LineChart
-            style={{ height: 200, flex: 1 }}
-            data={heartRateData?.map((item) => item.heartRate) || []}
-            svg={{ strokeWidth: 3, stroke: "red" }}
-            curve={d3.curveMonotoneX}
-            contentInset={{ top: 20, bottom: 20 }}
-          >
-            <Grid svg={{ stroke: "lightgray", strokeWidth: 1 }} belowChart={true} />
-            <VerticalGridLines />
-          </LineChart>
-        </View>
+            {/* Line chart */}
+            <View style={{ flex: 1 }}>
+              <LineChart
+                style={{ height: 200, flex: 1 }}
+                data={heartRateData?.map((item) => item.heartRate) || []}
+                svg={{ strokeWidth: 3, stroke: "red" }}
+                curve={d3.curveMonotoneX}
+                contentInset={{ top: 20, bottom: 20 }}
+              >
+                <Grid svg={{ stroke: "lightgray", strokeWidth: 1 }} belowChart={true} />
+                <VerticalGridLines />
+              </LineChart>
+            </View>
+          </View>
+        ) : (
+          <View style={styles.noDataContainer}>
+            <Text style={styles.noDataText}>No Heart Rate Data Found</Text>
+          </View>
+        )}
+
+        {/* X-Axis */}
+        {Array.isArray(heartRateData) && heartRateData.length > 0 && (
+          <XAxis
+            style={{ marginTop: 10 }}
+            data={heartRateData || []}
+            formatLabel={(value, index) =>
+              new Date(heartRateData[index]?.timestamp || Date.now()).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+            }
+            contentInset={{ left: 10, right: 10 }}
+            svg={{ fontSize: 12, fill: "black" }}
+          />
+        )}
       </View>
-    ) : (
-      // Show "No Data" message inside the chart container
-      <View style={styles.noDataContainer}>
-        <Text style={styles.noDataText}>No Heart Rate Data Found</Text>
-      </View>
     )}
 
-    {/* X-Axis (Only if data is available) */}
-    {Array.isArray(heartRateData) && heartRateData.length > 0 && (
-      <XAxis
-        style={{ marginTop: 10 }}
-        data={heartRateData || []}
-        formatLabel={(value, index) =>
-          new Date(heartRateData[index]?.timestamp || Date.now()).toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          })
-        }
-        contentInset={{ left: 10, right: 10 }}
-        svg={{ fontSize: 12, fill: "black" }}
-      />
-    )}
-  </View>
-)}
-
-    
-
-      
-    {/* Vehicle Metrics */}
-    {/* Vehicle Metrics */}
+    {/** Veicle health */}
     {selectedMetric === "Vehicle Metrics" && (
       <View style={styles.chartContainer}>
         <Text style={styles.chartTitle}>Fuel Level</Text>
@@ -346,6 +336,7 @@ const Charts = ({ selectedMetric, avgSpeeds, brakingEvents, tripsPerDay, drowsin
   );
 };
 
+// style section
 const styles = StyleSheet.create({
   container: {
     paddingVertical: 10,
@@ -386,13 +377,13 @@ const styles = StyleSheet.create({
   pieChartContainer: {
     justifyContent: "center",
     alignItems: "center",
-    flexDirection: "column", // Ensure vertical stacking
-    marginBottom: 10, // Add space between pie chart and legend
-    height: 220,  // Increased height
-    // Ensures chart doesn't get cut off
+    flexDirection: "column", 
+    marginBottom: 10, 
+    height: 220,  
+    
   },
   noDataContainer: {
-    height: 200, // Match chart height
+    height: 200, 
     justifyContent: "center",
     alignItems: "center",
   },
@@ -403,29 +394,26 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   legendContainer: {
-    flexDirection: "row",  // Align side by side
-    justifyContent: "center",  // Center at the bottom
+    flexDirection: "row",  
+    justifyContent: "center",  
     alignItems: "center",
     marginTop: 10,
   },
   legendItem: {
     flexDirection: "row",
     alignItems: "center",
-    marginHorizontal: 10, // Space between items
+    marginHorizontal: 10, 
   },
   legendDot: {
     width: 12,
     height: 12,
-    borderRadius: 6, // Make it a circle
+    borderRadius: 6, 
     marginRight: 5,
   },
   legendText: {
     fontSize: 14,
     color: "black",
   },
-
-
-
 
 });
 

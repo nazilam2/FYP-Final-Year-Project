@@ -1,3 +1,11 @@
+/**Name: Nazila Malekzadah C2141433 
+  Date: 11/04/2025
+  Descrption: This component renders the main dashboard for DriveGuard fleet manager web app.
+  Features inlcude : live map of drivers, indicate online vs offline drivers, filter drivers 
+
+*/
+
+// Import Lib
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { collection, getDocs, query, orderBy, limit } from "firebase/firestore";
@@ -7,22 +15,23 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "./Home.css";
 
-// Icons for Online (Green) & Offline (Red) Drivers
+// Custom marker icons for driver status - for online driver
 const greenMarkerIcon = new L.Icon({
   iconUrl: "https://maps.google.com/mapfiles/ms/icons/green-dot.png",
   iconSize: [32, 32],
   iconAnchor: [16, 32],
   popupAnchor: [0, -32],
-});
+}); // end of marker 
 
+// Custom marker icons for driver status - for offline driver
 const redMarkerIcon = new L.Icon({
   iconUrl: "https://maps.google.com/mapfiles/ms/icons/red-dot.png",
   iconSize: [32, 32],
   iconAnchor: [16, 32],
   popupAnchor: [0, -32],
-});
+}); // end of marker 
 
-// ✅ Auto-Zoom Component
+// Auto zoom the map to fit all driver locations 
 const AutoZoom = ({ drivers }) => {
   const map = useMap();
 
@@ -36,60 +45,66 @@ const AutoZoom = ({ drivers }) => {
   }, [drivers, map]);
 
   return null;
-};
+}; // end of auto zoom 
 
 
 function Home() {
   const navigate = useNavigate();
+
+  // state hooks 
   const [drivers, setDrivers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredDrivers, setFilteredDrivers] = useState([]);
   const [mapDrivers, setMapDrivers] = useState([]);
-  const [showPopup, setShowPopup] = useState(false); // ✅ Toggle search pop-up
-  // ✅ Define defaultPosition before JSX
+  const [showPopup, setShowPopup] = useState(false);
+  
+  // Fallback map center (Ireland) if no drivers found
   const defaultPosition = mapDrivers.length > 0
     ? [mapDrivers[0].latitude, mapDrivers[0].longitude]
-    : [53.4129, -8.2439]; // Default fallback position (Ireland)
+    : [53.4129, -8.2439]; // Ireland 
 
+    //Fetch drivers data from firestore
     useEffect(() => {
       const fetchDrivers = async () => {
         try {
+          
+          // fetch drivers 
           const driversRef = collection(db, "users");
           const snapshot = await getDocs(driversRef);
     
-          // Fetch active user from Firestore
+          // fetch active users 
           const activeUserRef = collection(db, "sensor_users");
           const activeUserDoc = await getDocs(activeUserRef);
           let activeUserId = null;
     
+          // Get currentlt active user 
           activeUserDoc.forEach((doc) => {
             if (doc.id === "active_user") {
-              activeUserId = doc.data().userId; // Extract active userId
+              activeUserId = doc.data().userId;
             }
           });
     
-          console.log("Active User ID:", activeUserId); // Debugging
-    
+          // Build driver data list 
           const driverPromises = snapshot.docs.map(async (doc) => {
             const userData = doc.data();
             const driverId = doc.id;
     
             if (userData.type !== "Company") {
-              return null; // Ignore non-company users
-            }
+              return null; // gets users associated with compmany
+            }//end if 
     
-            //Fetch latest GPS & activity data
+            // fetch senor data and lates GPS
             const sensorDataRef = collection(db, "users", driverId, "sensor_data");
             const sensorQuery = query(sensorDataRef, orderBy("timestamp", "desc"), limit(1));
             const sensorSnapshot = await getDocs(sensorQuery);
     
             let latestGPS = null;
-            let isOnline = driverId === activeUserId; // Active user check
+            let isOnline = driverId === activeUserId; // Active user check 
     
             if (!sensorSnapshot.empty) {
               const latestSensorData = sensorSnapshot.docs[0].data();
               latestGPS = latestSensorData.data?.GPS || null;
-            }
+            }// end if 
     
             return {
               id: driverId,
@@ -98,9 +113,9 @@ function Home() {
               fleetId: userData.fleetId || "N/A",
               latitude: latestGPS?.Latitude || null,
               longitude: latestGPS?.Longitude || null,
-              isOnline: isOnline, // Use Firestore active user data
+              isOnline: isOnline,
             };
-          });
+          }); // end of driverPromises
     
           const driverData = await Promise.all(driverPromises);
           const filteredDrivers = driverData.filter(driver => driver !== null);
@@ -118,12 +133,13 @@ function Home() {
     }, []);
     
 
+  // this handle logout 
   const handleLogout = async () => {
     localStorage.clear();
     navigate("/admin-login");
   };
 
-  // Search Logic: Filters all drivers, not just those on the map
+  // filter drivers based on search inpit 
   useEffect(() => {
     const results = drivers.filter(
       (driver) =>
@@ -131,15 +147,13 @@ function Home() {
         driver.vehicleId.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setFilteredDrivers(results);
-    setShowPopup(searchTerm.length > 0); // Show pop-up only when searching
-
-    // If the searched driver has GPS, add them to the map
-    //setMapDrivers(results.filter(driver => driver.latitude !== null && driver.longitude !== null));
+    setShowPopup(searchTerm.length > 0); // show pop-up only when searching
+    // if the searched driver has GPS, add them to the map 
   }, [searchTerm, drivers]);
 
   return (
     <div className="home-container">
-      {/* Header */}
+      {/*Top header */}
       <header className="home-header">
         <h1>DriveGuard</h1>
         <button className="logout-button" onClick={handleLogout}>
@@ -147,9 +161,10 @@ function Home() {
         </button>
       </header>
 
-      {/* Main Content */}
+      {/*Main content section */}
       <div className="home-main-content">
-        {/* Side Menu */}
+
+        {/*Left sidedbar naviagtion */}
         <nav className="home-side-menu">
           <ul>
             <li><Link to="/drivers">Drivers</Link></li>
@@ -158,9 +173,10 @@ function Home() {
           </ul>
         </nav>
 
-        {/* Map & Search Section */}
+        {/* Map and search section */}
         <div className="home-map-section">
-          {/* Search Bar */}
+
+          {/*  Searc bar */}
           <div className="search-container">
             <input
               type="text"
@@ -171,69 +187,68 @@ function Home() {
             <button className="search-button">🔍</button>
           </div>
 
-          {/* Interactive Map - Always show all drivers */}
-          
-          <MapContainer
-          center={defaultPosition}
-          zoom={10}
-          className="map-container"
-          style={{ height: "500px", width: "100%" }} // ✅ enforce it here
-        >
+        {/*Map diaply */}
+        <MapContainer
+            center={defaultPosition}
+            zoom={10}
+            className="map-container"
+            style={{ height: "500px", width: "100%" }} // ✅ enforce it here
+          >
 
-            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-            <AutoZoom drivers={mapDrivers} />
+          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+          <AutoZoom drivers={mapDrivers} />
 
-            {/* Display all drivers on the map */}
-            {mapDrivers.map((driver, index) => (
-            <Marker
-              key={driver.id}
-              position={[
-                driver.latitude + index * 0.0001,  // Slightly shift latitude
-                driver.longitude + index * 0.0001 // Slightly shift longitude
-              ]}
-              icon={driver.isOnline ? greenMarkerIcon : redMarkerIcon}
+          {/* diasplay all drivers on the map */}
+          {mapDrivers.map((driver, index) => (
+          <Marker
+            key={driver.id}
+            position={[
+              driver.latitude + index * 0.0001,  
+              driver.longitude + index * 0.0001 
+            ]}
+            icon={driver.isOnline ? greenMarkerIcon : redMarkerIcon}
+          >
+          <Popup>
+            <div
+              className="popup-content"
+              onClick={() => navigate(`/sensor-data/${driver.id}`)}
+              style={{ cursor: "pointer" }}
             >
-              <Popup>
-                <div
-                  className="popup-content"
-                  onClick={() => navigate(`/sensor-data/${driver.id}`)}
-                  style={{ cursor: "pointer" }}
-                >
-                  <h3>{driver.name}</h3>
-                  <p><strong>Vehicle:</strong> {driver.vehicleId}</p>
-                  <p><strong>Fleet:</strong> {driver.fleetId}</p>
-                  <p style={{ color: driver.isOnline ? "green" : "red", fontWeight: "bold" }}>
-                    {driver.isOnline ? "🟢 Online" : "🔴 Offline"}
-                  </p>
-                </div>
-              </Popup>
-            </Marker>
-          ))}
-
-          </MapContainer>
-
-          {/* Floating Search Results Pop-Up */}
-          {showPopup && (
-            <div className="search-popup-overlay" onClick={() => setShowPopup(false)}>
-              <div className="search-popup" onClick={(e) => e.stopPropagation()}>
-                <button className="close-popup" onClick={() => setShowPopup(false)}>✖</button>
-                {filteredDrivers.length > 0 ? (
-                  filteredDrivers.map((driver) => (
-                    <div key={driver.id} className="search-result-card" onClick={() => navigate(`/sensor-data/${driver.id}`)}>
-                      <p><strong>{driver.name}</strong></p>
-                      <p>Vehicle ID: {driver.vehicleId}</p>
-                      <p>Fleet ID: {driver.fleetId}</p>
-                    </div>
-                  ))
-                ) : (
-                  <p>No matching drivers found.</p>
-                )}
-              </div>
+              <h3>{driver.name}</h3>
+              <p><strong>Vehicle:</strong> {driver.vehicleId}</p>
+              <p><strong>Fleet:</strong> {driver.fleetId}</p>
+              <p style={{ color: driver.isOnline ? "green" : "red", fontWeight: "bold" }}>
+                {driver.isOnline ? "🟢 Online" : "🔴 Offline"}
+              </p>
             </div>
-          )}
+          </Popup>
+        </Marker>
+        ))}
+
+      </MapContainer>
+
+      {/* Seacrh pop up results*/}
+      {showPopup && (
+        <div className="search-popup-overlay" onClick={() => setShowPopup(false)}>
+          <div className="search-popup" onClick={(e) => e.stopPropagation()}>
+            <button className="close-popup" onClick={() => setShowPopup(false)}>✖</button>
+            {filteredDrivers.length > 0 ? (
+              filteredDrivers.map((driver) => (
+                <div key={driver.id} className="search-result-card" onClick={() => navigate(`/sensor-data/${driver.id}`)}>
+                  <p><strong>{driver.name}</strong></p>
+                  <p>Vehicle ID: {driver.vehicleId}</p>
+                  <p>Fleet ID: {driver.fleetId}</p>
+                </div>
+              ))
+            ) : (
+              <p>No matching drivers found.</p>
+            )}
+          </div>
         </div>
-      </div>
+       )}
+     </div>
     </div>
+  </div>
   );
 }
 

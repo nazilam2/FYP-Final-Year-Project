@@ -1,7 +1,18 @@
+/**Name: Nazila Malekzadah C2141433 
+  Date: 11/04/2025
+  Descrption: This component allows the admin to:
+  - Create trip by selecting a driver and providing start/destination addrees.
+  - visualize the route between location on a map
+  - view ongoing and completed trips 
+  - display estimated trip duration ans trip history calender
+  
+*/
+
+// Import Lib
 import React, { useState, useEffect } from "react";
-import { collection, doc, addDoc, getDoc, getDocs , onSnapshot, query } from "firebase/firestore";
+import { collection, doc, addDoc, getDoc, getDocs , onSnapshot } from "firebase/firestore";
 import { db } from "./firebase";
-import { MapContainer, TileLayer, Marker, Polyline, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, Polyline, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import "./TripPlanner.css";
 import { useNavigate } from "react-router-dom";
@@ -9,9 +20,10 @@ import polyline from "polyline"; // Import polyline for decoding
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
-
+// OpenRouteService API key
 const ORS_API_KEY = "5b3ce3597851110001cf624870ee4fdffebe4466afe36ccea5eac325"; // Ensure API Key is correct
 
+// Auto zoom the map to fit route bounds
 const AutoZoom = ({ route }) => {
   const map = useMap();
   useEffect(() => {
@@ -24,6 +36,8 @@ const AutoZoom = ({ route }) => {
 };
 
 function TripPlanner() {
+
+  // state variables 
   const navigate = useNavigate();
   const [drivers, setDrivers] = useState([]);
   const [selectedDriver, setSelectedDriver] = useState("");
@@ -34,13 +48,12 @@ function TripPlanner() {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [trips, setTrips] = useState([]);
-  const [activeTab, setActiveTab] = useState("ongoing"); // 🆕 Controls the trip tab (Ongoing/Completed)
-  const [selectedTrip, setSelectedTrip] = useState(null); // 🆕 Stores the selected trip
-
- // Define state for date and estimated time
- const [selectedDate, setSelectedDate] = useState(null);
+  const [activeTab, setActiveTab] = useState("ongoing"); 
+  const [selectedTrip, setSelectedTrip] = useState(null); 
+  const [selectedDate, setSelectedDate] = useState(null);
  
 
+  // Fetch drivers  
   useEffect(() => {
     const fetchDrivers = async () => {
       const driversRef = collection(db, "users");
@@ -50,6 +63,7 @@ function TripPlanner() {
     fetchDrivers();
   }, []);
 
+  // Fetch trips for all users 
   useEffect(() => {
     const fetchAllTrips = async () => {
       try {
@@ -63,38 +77,38 @@ function TripPlanner() {
           const userId = userDoc.id;
           const userTripsCollection = collection(db, "users", userId, "trips");
   
-          // Subscribe to real-time updates
+          // real time updateds 
           onSnapshot(userTripsCollection, (tripsSnapshot) => {
             let userTrips = tripsSnapshot.docs.map((tripDoc) => ({
               id: tripDoc.id,
-              driverName: userData.name, // Include driver name
+              driverName: userData.name, // include driver name
               ...tripDoc.data(),
             }));
-  
-            // Merge user trips into all trips list
+
+            // Merge user trios into all trip list 
             allTrips = [...allTrips, ...userTrips];
   
-            setTrips(allTrips); // ✅ Update state with all trips
+            setTrips(allTrips); 
             setLoading(false);
           });
         };
   
-        // Fetch trips for each driver
+        // fetch trips for each driver
         const tripPromises = usersSnapshot.docs.map((userDoc) => fetchTripsForUser(userDoc));
         await Promise.all(tripPromises);
       } catch (error) {
         setErrorMessage("Error fetching trips. Check Firestore rules.");
-        console.error("🔥 Error fetching trips:", error);
+        console.error(" Error fetching trips:", error);
         setLoading(false);
       }
     };
   
     fetchAllTrips();
-  }, []); // ✅ No selectedDriver dependency
+  }, []);
   
-  
+  // convet the driver address to coordinates 
   const geocodeAddress = async (address) => {
-    const apiUrl = `https://api.openrouteservice.org/geocode/search?api_key=${ORS_API_KEY}&text=${encodeURIComponent(address)}`;
+    const apiUrl = `https://api.openrouteservice.org/geocode/search?api_key=${ORS_API_KEY}&text=${encodeURIComponent(address)}`;  // opnerouteservice API
     
     try {
       console.log(`Fetching coordinates for: ${address}`);
@@ -119,6 +133,7 @@ function TripPlanner() {
     }
   };
 
+  // Fetch and decode route from API 
   const fetchRoute = async () => {
     if (!startAddress || !destinationAddress) return;
     setLoading(true);
@@ -148,14 +163,14 @@ function TripPlanner() {
             },
             body: JSON.stringify({
                 coordinates: coordinates,
-                format: "geojson", // Ensure correct format
+                format: "geojson", // ensure correct format 
             }),
         });
 
         const data = await response.json();
         console.log("Full Route API Response:", data);
 
-        // ✅ Ensure `routes` exists and contains geometry
+        // ensure route exists and contains geometry
         if (!data.routes || data.routes.length === 0) {
             console.error("No valid route found:", data);
             setErrorMessage("Route data is missing or invalid.");
@@ -163,8 +178,7 @@ function TripPlanner() {
             setLoading(false);
             return;
         }
-
-        // ✅ Decode polyline geometry
+        // decode polyline geometry
         const encodedPolyline = data.routes[0]?.geometry;
         if (!encodedPolyline) {
             console.error("Invalid route geometry:", data.routes[0]);
@@ -173,8 +187,7 @@ function TripPlanner() {
             setLoading(false);
             return;
         }
-
-        // 🛑 Decode the polyline geometry
+        // decode the polyline geometry
         const decodedRoute = polyline.decode(encodedPolyline).map(([lat, lng]) => [lat, lng]);
 
         setRoute(decodedRoute);
@@ -190,10 +203,12 @@ function TripPlanner() {
 };
 
 
+  // referash route when addressing change 
   useEffect(() => {
     fetchRoute();
   }, [startAddress, destinationAddress]);
 
+  // submit new trip to firestore 
   const handleSubmit = async () => {
     if (!selectedDriver || !startAddress || !destinationAddress) {
       setErrorMessage("Please select a driver and enter valid addresses.");
@@ -225,18 +240,19 @@ function TripPlanner() {
     }
   };
 
+  // handle trip selection to re-render map and calendar
   const handleTripClick = async (trip) => {
-    setSelectedTrip(trip); // ✅ Store selected trip
+    setSelectedTrip(trip); // store selected trip 
     setErrorMessage("");
-    setRoute([]); // ✅ Clear old route
+    setRoute([]); // clear old trips 
     
-    // Convert Firestore Timestamp to JavaScript Date
+    // convert firestore timestamp to javasript date
     if (trip.createdAt) {
         const tripDate = trip.createdAt.toDate ? trip.createdAt.toDate() : new Date(trip.createdAt); 
         setSelectedDate(tripDate);
     }
 
-    // Fetch route for the selected trip
+    // fetch route for the selected trip 
     const startLocation = await geocodeAddress(trip.startAddress);
     const destination = await geocodeAddress(trip.destinationAddress);
 
@@ -279,8 +295,9 @@ function TripPlanner() {
 
   return (
     <div className="trip-dashboard">
+
       <div className="top-section">
-        {/* LEFT COLUMN: MAP */}
+        {/* Top section */}
         <div className="left-column">
           <div className="trip-map-container">
             <MapContainer center={[53.35, -6.26]} zoom={8} style={{ width: "100%", height: "100%" }}>
@@ -291,11 +308,12 @@ function TripPlanner() {
           </div>
         </div>
   
-        {/* RIGHT COLUMN: TRIP FORM */}
-        <div className="right-column">
+      {/* Left section Map*/}
+      <div className="right-column">
         <div className="trip-form-container">
           <h2 className="form-title">Create Trip</h2>
 
+          {/* Driver selector*/}
           <div className="form-group">
             <label className="form-label">👤 Driver</label>
             <select 
@@ -311,6 +329,7 @@ function TripPlanner() {
             </select>
           </div>
 
+          {/* Start Address*/}
           <div className="form-group">
             <label className="form-label">📍 Start Location</label>
             <input
@@ -321,6 +340,7 @@ function TripPlanner() {
             />
           </div>
 
+          {/* Destination*/}
           <div className="form-group">
             <label className="form-label">📌 Destination</label>
             <input
@@ -331,12 +351,12 @@ function TripPlanner() {
             />
           </div>
 
+          {/* estimated time */}
           {estimatedTime && !loading && (
             <div className="estimated-time">
               🕒 Estimated: {estimatedTime}
             </div>
           )}
-
           {errorMessage && <div className="error-message">{errorMessage}</div>}
 
           <button
@@ -351,63 +371,62 @@ function TripPlanner() {
 
       </div>
   
-      {/* BOTTOM SECTION: TRIPS LIST */}
+       {/* Buttom selection trips lists + calender*/}
       <div className="bottom-section">
-  {/* Ongoing Trips Column */}
-  <div className="bottom-section">
-  {/* Ongoing Trips Column */}
-  <div className="trips-container">
-    <h3 className="trip-heading">🚗 Ongoing Trips</h3>
-    <div className="trip-grid">
-      {trips.filter(trip => trip.status === "pending").map((trip) => (
-        <div className="trip-card" key={trip.id} onClick={() => handleTripClick(trip)}>
-          <p><strong>Driver:</strong> {trip.driverName}</p>
-          <p><strong>Start:</strong> {trip.startAddress}</p>
-          <p><strong>Destination:</strong> {trip.destinationAddress}</p>
-        </div>
-      ))}
-    </div>
-  </div>
 
-  {/* Completed Trips Column */}
-  <div className="trips-container">
-    <h3 className="trip-heading">✅ Completed Trips</h3>
-    <div className="trip-grid">
-      {trips.filter(trip => trip.status === "complete").map((trip) => (
-        <div className="trip-card completed" key={trip.id} onClick={() => handleTripClick(trip)}>
-          <p><strong>Driver:</strong> {trip.driverName}</p>
-          <p><strong>Start:</strong> {trip.startAddress}</p>
-          <p><strong>Destination:</strong> {trip.destinationAddress}</p>
+        {/* ongoing trips */}
+        <div className="bottom-section">
+          <div className="trips-container">
+            <h3 className="trip-heading"> Ongoing Trips</h3>
+            <div className="trip-grid">
+              {trips.filter(trip => trip.status === "pending").map((trip) => (
+                <div className="trip-card" key={trip.id} onClick={() => handleTripClick(trip)}>
+                  <p><strong>Driver:</strong> {trip.driverName}</p>
+                  <p><strong>Start:</strong> {trip.startAddress}</p>
+                  <p><strong>Destination:</strong> {trip.destinationAddress}</p>
+                </div>
+              ))}
+          </div>
+      </div>
+      
+      {/* ocompleted trips */}
+      <div className="trips-container">
+        <h3 className="trip-heading">Completed Trips</h3>
+        <div className="trip-grid">
+          {trips.filter(trip => trip.status === "complete").map((trip) => (
+            <div className="trip-card completed" key={trip.id} onClick={() => handleTripClick(trip)}>
+              <p><strong>Driver:</strong> {trip.driverName}</p>
+              <p><strong>Start:</strong> {trip.startAddress}</p>
+              <p><strong>Destination:</strong> {trip.destinationAddress}</p>
+            </div>
+          ))}
         </div>
-      ))}
+      </div>
     </div>
-  </div>
-</div>
-
-{/* ✅ Combined Calendar & Estimated Time (Stacked) */}
-<div className="calendar-estimated-container">
     
-    {/* 📅 Calendar on Top */}
-    <div className="calendar-container">
+    {/* calender + estimated time */}
+    <div className="calendar-estimated-container">
+        
+      {/* calender on the top */}
+      <div className="calendar-container">
         <DatePicker
-            selected={selectedDate}
-            onChange={(date) => setSelectedDate(date)}
-            dateFormat="dd/MM/yyyy"
-            inline
+          selected={selectedDate}
+          onChange={(date) => setSelectedDate(date)}
+          dateFormat="dd/MM/yyyy"
+          inline
         />
-    </div>
+      </div>
 
-    {/* ⏳ Estimated Time Below */}
-    <div className="estimated-time-container">
+      {/* estimated time */}
+      <div className="estimated-time-container">
         <h3>🕒 Estimated Time</h3>
         <div className="estimated-time">
             {estimatedTime ? estimatedTime : "Select a trip"}
         </div>
-    </div>
-
-</div>   
-</div>  
-    </div>
+      </div>
+      </div>   
+    </div>  
+  </div>
   );
   
 }  

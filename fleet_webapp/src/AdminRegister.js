@@ -1,4 +1,11 @@
-// AdminRegister.js 
+
+/** 
+ Name: Nazila Malekzadah C21414344
+  Date: 11/04/2025
+  Description: allow users to ragister
+ */
+
+// import lib
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { auth, db, createUserWithEmailAndPassword, setDoc, doc, collection } from "./firebase";
