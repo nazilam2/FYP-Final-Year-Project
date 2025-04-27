@@ -1,94 +1,111 @@
-🌟 About the Project
 
-This repository contains DriveGuard, a comprehensive Driver Safety and Fleet Management System developed as part of my final year dissertation for the BSc in Computer Science degree at Technological University Dublin.
+# 🌟 About the Project
 
-The project focuses on enhancing driver safety and improving fleet management operations by integrating real-time monitoring, drowsiness detection, trip management, and driver behavior analytics.
+This repository contains DriveGuard, a comprehensive Driver Safety and Fleet Management System developed as part of my final year project for the BSc in Computer Science degree at Technological University Dublin.
 
-📱 Applications
+This project focuses on enhancing driver safety and improving fleet management operations by integrating real-time monitoring, drowsiness detection, trip management, and driver behavoir analytics.
 
-1 Driver Mobile App
+# 📱 Applications
 
+## 1️ Driver Mobile App 
 Provides drowsiness detection using the smartphone camera.
 
-Displays assigned trips and navigation assistance.
+Display assigned trips and navigation assistance. 
 
-Visualizes real-time driving metrics like speed, harsh braking, and trip count.
+Visualizes real-time driving metrics like speed, harsh braking, and trip count, and heart rate. 
 
-
-
-2️ Fleet Manager Web App
-
+## 2️ Fleet Manager Web App 
 Real-time driver tracking and monitoring.
 
-Driver behavior analysis with dashboards and statistics.
+Driver behavoir analysis with dashboards and statistics.
 
-Trip creation and assignment.
+Trip creation and assignment. 
+
+
+# 👾 Tech Stack 
+
+## Programming Languages 
+- JavaScript (for Web and Backend)
+
+- JavaScrpt (for React Native App)
+
+- MicroPython (for Raspberry Pi Pico programming)
+
+
+### Front End:
+
+- React.js (Web App)
+- React Native (Driver Mobile App)
+
+### Database:
+
+- Firebase Firestore (Cloud-hosted NoSQL database)
+
+### Server:
+
+- Node.js with Express (API server and real-time data processing)
+
+- MQTT Protocol (for IoT sensor data transmission)
+
+### Hardware
+- Raspberry Pi Pico (Microcontroller)
+
+- Accelerometer (Motion and sudden impact detection)
+
+- GPS (Real-time GPS tracking)
+
+- Rotary Angle Sensor (Fuel level simulation)
+
+- Heart rate sensor 
+
+
+### Version Control:
+
+- Git and GitHub (for version control and collaboration) 
+
+# 🧰 Getting Started 
+
+To set up the project locally:
+
+
+1. Clone the Repository
+   
+- git clone https://github.com/nazilam2/FYP-Final-Year-Project.git
+- cd FYP-Final-Year-Project
+
+2. Start the Web App
+
+- cd fleet_webapp
+
+- npm install
+
+- npm start 
+
+3. Start the Mobile App
+
+- cd Driver_app
+
+- npx react-native run-android
+
+  Note: Mobile App must be tested on a physical Android device. 
 
 
 
-👾 Tech Stack
+# 👀 How to Operate
 
-Programming Languages
+Driver App: Drivers log in to monitor their fatigue status, view assigned trips, get drowsiness and coffee break alerts, and track their driving behavior. 
 
-JavaScript (for Web and Backend)
+Fleet Manager Web App: Managers log in to assign trips, track drivers in real time, check online/offline drivers, update/delete drivers, and view driver behavior analytics. 
 
-JavaScript / TypeScript (for React Native App)
+# 🎥 Video Demonstration 
 
-MicroPython (for Raspberry Pi Pico programming)
+Driver Mobile App Demonstration
 
-Front End
+Fleet Manager Web App Demonstration
 
-React.js (Web App)
 
-React Native (Driver Mobile App)
 
-Database
 
-Firebase Firestore (Cloud-hosted NoSQL database)
-
-Server
-
-Node.js with Express (API server and real-time data processing)
-
-MQTT Protocol (For IoT sensor data transmission)
-
-Version Control
-
-Git and GitHub (for version control and collaboration)
-
-🧰 Getting Started
-
-Refer to the Installation Guide below to set up the project locally:
-
-Clone the Repository
-
-git clone https://github.com/nazilam2/FYP-Final-Year-Project.git
-
-Backend Setup
-
-cd server
-npm install
-npm run dev
-
-Web Frontend Setup
-
-cd client
-npm install
-npm start
-
-Mobile App Setup
-
-cd mobile
-npm install
-npx expo start
-
-Ensure Node.js, npm, and Expo CLI are installed.
-
-👀 How to Operate
-
-Driver App: Drivers log in to monitor their fatigue status, receive trips, and  view behavior metrics.
-
-Fleet Manager Web App: Managers log in to track drivers, assign trips, and view behavior metrics.
 
 
 
