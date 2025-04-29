@@ -5,6 +5,15 @@ This repository contains DriveGuard, a comprehensive Driver Safety and Fleet Man
 
 This project focuses on enhancing driver safety and improving fleet management operations by integrating real-time monitoring, drowsiness detection, trip management, and driver behavoir analytics.
 
+## 🏆 Awards  
+**Best Overall Project** – TU Dublin Computer Science Project Fair 2025  
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/619e6cd7-f057-4e93-bcf8-f8880cec4470" height="460" width="400"/>
+  <img src="https://github.com/user-attachments/assets/3fb9a955-b5db-40ca-9656-e8e8881d5830" height="460" width="400"/>
+</p>
+
+
 # 📱 Applications
 
 ## 1️ Driver Mobile App 
