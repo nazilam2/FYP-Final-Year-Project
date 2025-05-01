@@ -1,0 +1,5 @@
+wifi_ssid = 'Nazila'
+wifi_password = '12345678'
+mqtt_server = b'test.mosquitto.org'
+mqtt_username = b'naz'
+mqtt_password = b''
